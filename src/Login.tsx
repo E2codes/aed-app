@@ -39,7 +39,7 @@ function Login({ onLogin }: Props) {
           </svg>
         </div>
         <div style={{ fontWeight: '700', fontSize: '16px', color: '#3d3d3a' }}>National Safety Training Center</div>
-        <div style={{ fontSize: '13px', color: '#888780', marginTop: '4px' }}>AED Inspection App</div>
+        <div style={{ fontSize: '16px', color: '#888780', marginTop: '4px' }}>AED Inspection App</div>
       </div>
 
       {/* Login Card */}
@@ -54,7 +54,7 @@ function Login({ onLogin }: Props) {
               value={email}
               onChange={e => setEmail(e.target.value)}
               placeholder="your@email.com"
-              style={{ width: '100%', padding: '10px', border: '1px solid rgba(0,0,0,0.12)', borderRadius: '6px', fontSize: '14px', backgroundColor: 'white', color: '#3d3d3a', boxSizing: 'border-box' }}
+              style={{ width: '100%', padding: '10px', border: '1px solid rgba(0,0,0,0.12)', borderRadius: '6px', fontSize: '16px', backgroundColor: 'white', color: '#3d3d3a', boxSizing: 'border-box' }}
             />
           </div>
 
@@ -65,7 +65,7 @@ function Login({ onLogin }: Props) {
               value={password}
               onChange={e => setPassword(e.target.value)}
               placeholder="••••••••"
-              style={{ width: '100%', padding: '10px', border: '1px solid rgba(0,0,0,0.12)', borderRadius: '6px', fontSize: '14px', backgroundColor: 'white', color: '#3d3d3a', boxSizing: 'border-box' }}
+              style={{ width: '100%', padding: '10px', border: '1px solid rgba(0,0,0,0.12)', borderRadius: '6px', fontSize: '16px', backgroundColor: 'white', color: '#3d3d3a', boxSizing: 'border-box' }}
             />
           </div>
 
@@ -78,7 +78,7 @@ function Login({ onLogin }: Props) {
           <button
             type="submit"
             disabled={loading}
-            style={{ width: '100%', padding: '14px', backgroundColor: loading ? '#888780' : '#5d8b5f', color: 'white', border: 'none', borderRadius: '6px', fontSize: '15px', fontWeight: '700', cursor: loading ? 'not-allowed' : 'pointer' }}
+            style={{ width: '100%', padding: '16px', backgroundColor: loading ? '#888780' : '#5d8b5f', color: 'white', border: 'none', borderRadius: '6px', fontSize: '15px', fontWeight: '700', cursor: loading ? 'not-allowed' : 'pointer' }}
           >
             {loading ? 'Signing in...' : 'Sign in'}
           </button>
