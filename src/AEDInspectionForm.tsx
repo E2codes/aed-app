@@ -114,11 +114,11 @@ function AEDInspectionForm({ prefill = {}, onSubmit, user }: Props) {
 
   const section = { backgroundColor: '#dcdcdd', borderRadius: '8px', padding: '20px', marginBottom: '16px', border: '1px solid rgba(0,0,0,0.08)' };
   const label = { display: 'block' as const, fontSize: '12px', fontWeight: '600' as const, color: '#3d3d3a', marginBottom: '6px' };
-  const input = (hasError: boolean) => ({ width: '100%', padding: '10px', border: hasError ? '1px solid #a63a2a' : '1px solid rgba(0,0,0,0.12)', borderRadius: '6px', fontSize: '14px', backgroundColor: 'white', color: '#3d3d3a', boxSizing: 'border-box' as const });
+  const input = (hasError: boolean) => ({ width: '100%', padding: '10px', border: hasError ? '1px solid #a63a2a' : '1px solid rgba(0,0,0,0.12)', borderRadius: '6px', fontSize: '16px', backgroundColor: 'white', color: '#3d3d3a', boxSizing: 'border-box' as const });
   const err = { fontSize: '12px', color: '#a63a2a', marginTop: '4px' };
   const field = { marginBottom: '16px' };
   const radioRow = { display: 'flex' as const, gap: '16px', flexWrap: 'wrap' as const };
-  const radioLabel = { display: 'flex' as const, alignItems: 'center' as const, gap: '6px', fontSize: '14px', cursor: 'pointer' as const };
+  const radioLabel = { display: 'flex' as const, alignItems: 'center' as const, gap: '6px', fontSize: '16px', cursor: 'pointer' as const };
 
   if (submitted) {
     return (
@@ -130,7 +130,7 @@ function AEDInspectionForm({ prefill = {}, onSubmit, user }: Props) {
             </svg>
           </div>
           <div style={{ fontWeight: '700', fontSize: '18px', color: '#3d3d3a', marginBottom: '8px' }}>Inspection Saved</div>
-          <div style={{ fontSize: '14px', color: '#888780' }}>Returning to dashboard...</div>
+          <div style={{ fontSize: '16px', color: '#888780' }}>Returning to dashboard...</div>
         </div>
       </div>
     );
@@ -140,7 +140,7 @@ function AEDInspectionForm({ prefill = {}, onSubmit, user }: Props) {
     <div style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif', backgroundColor: '#b5b5b7', minHeight: '100vh', paddingTop: '60px', paddingBottom: '32px' }}>
 
       {/* Header */}
-      <div style={{ position: 'fixed', top: 0, left: 0, right: 0, backgroundColor: '#9a9a9c', padding: '14px 16px', display: 'flex', alignItems: 'center', justifyContent: 'center', borderBottom: '1px solid rgba(0,0,0,0.15)', zIndex: 100 }}>
+      <div style={{ position: 'fixed', top: 0, left: 0, right: 0, backgroundColor: '#9a9a9c', padding: '16px 16px', display: 'flex', alignItems: 'center', justifyContent: 'center', borderBottom: '1px solid rgba(0,0,0,0.15)', zIndex: 100 }}>
         <span style={{ color: 'white', fontWeight: '700', fontSize: '15px' }}>New Inspection</span>
       </div>
 
@@ -148,14 +148,14 @@ function AEDInspectionForm({ prefill = {}, onSubmit, user }: Props) {
 
         {/* Pre-filled notice */}
         {(prefill.brand || prefill.serialNumber) && (
-          <div style={{ backgroundColor: '#5d8b5f', color: 'white', padding: '10px 14px', borderRadius: '6px', marginBottom: '16px', fontSize: '13px', fontWeight: '600' }}>
+          <div style={{ backgroundColor: '#5d8b5f', color: 'white', padding: '10px 16px', borderRadius: '6px', marginBottom: '16px', fontSize: '13px', fontWeight: '600' }}>
             Device info pre-filled from scan — verify and complete the form
           </div>
         )}
 
         {/* Section 1: Device */}
         <div style={section}>
-          <h3 style={{ margin: '0 0 16px 0', fontSize: '14px', fontWeight: '700', color: '#3d3d3a', borderBottom: '1px solid rgba(0,0,0,0.08)', paddingBottom: '10px' }}>Device Information</h3>
+          <h3 style={{ margin: '0 0 16px 0', fontSize: '16px', fontWeight: '700', color: '#3d3d3a', borderBottom: '1px solid rgba(0,0,0,0.08)', paddingBottom: '10px' }}>Device Information</h3>
 
           <div style={field}>
             <label style={label}>Brand</label>
@@ -194,7 +194,7 @@ function AEDInspectionForm({ prefill = {}, onSubmit, user }: Props) {
 
         {/* Section 2: Inspector */}
         <div style={section}>
-          <h3 style={{ margin: '0 0 16px 0', fontSize: '14px', fontWeight: '700', color: '#3d3d3a', borderBottom: '1px solid rgba(0,0,0,0.08)', paddingBottom: '10px' }}>Inspector</h3>
+          <h3 style={{ margin: '0 0 16px 0', fontSize: '16px', fontWeight: '700', color: '#3d3d3a', borderBottom: '1px solid rgba(0,0,0,0.08)', paddingBottom: '10px' }}>Inspector</h3>
 
           <div style={field}>
             <label style={label}>Your Name</label>
@@ -210,7 +210,7 @@ function AEDInspectionForm({ prefill = {}, onSubmit, user }: Props) {
 
         {/* Section 3: Consumables */}
         <div style={section}>
-          <h3 style={{ margin: '0 0 16px 0', fontSize: '14px', fontWeight: '700', color: '#3d3d3a', borderBottom: '1px solid rgba(0,0,0,0.08)', paddingBottom: '10px' }}>Consumables</h3>
+          <h3 style={{ margin: '0 0 16px 0', fontSize: '16px', fontWeight: '700', color: '#3d3d3a', borderBottom: '1px solid rgba(0,0,0,0.08)', paddingBottom: '10px' }}>Consumables</h3>
 
           <div style={field}>
             <label style={label}>Battery Status</label>
@@ -251,7 +251,7 @@ function AEDInspectionForm({ prefill = {}, onSubmit, user }: Props) {
 
         {/* Section 4: Operational */}
         <div style={section}>
-          <h3 style={{ margin: '0 0 16px 0', fontSize: '14px', fontWeight: '700', color: '#3d3d3a', borderBottom: '1px solid rgba(0,0,0,0.08)', paddingBottom: '10px' }}>Operational Checks</h3>
+          <h3 style={{ margin: '0 0 16px 0', fontSize: '16px', fontWeight: '700', color: '#3d3d3a', borderBottom: '1px solid rgba(0,0,0,0.08)', paddingBottom: '10px' }}>Operational Checks</h3>
 
           <div style={field}>
             <label style={label}>Display Status</label>
@@ -269,7 +269,7 @@ function AEDInspectionForm({ prefill = {}, onSubmit, user }: Props) {
           <div style={field}>
             <label style={{ ...radioLabel, cursor: 'pointer' }}>
               <input type="checkbox" checked={soundTest} onChange={e => setSoundTest(e.target.checked)} />
-              <span style={{ fontSize: '14px', fontWeight: '600', color: '#3d3d3a' }}>Sound test passed</span>
+              <span style={{ fontSize: '16px', fontWeight: '600', color: '#3d3d3a' }}>Sound test passed</span>
             </label>
           </div>
 
@@ -289,7 +289,7 @@ function AEDInspectionForm({ prefill = {}, onSubmit, user }: Props) {
 
         {/* Section 5: Overall */}
         <div style={section}>
-          <h3 style={{ margin: '0 0 16px 0', fontSize: '14px', fontWeight: '700', color: '#3d3d3a', borderBottom: '1px solid rgba(0,0,0,0.08)', paddingBottom: '10px' }}>Sign Off</h3>
+          <h3 style={{ margin: '0 0 16px 0', fontSize: '16px', fontWeight: '700', color: '#3d3d3a', borderBottom: '1px solid rgba(0,0,0,0.08)', paddingBottom: '10px' }}>Sign Off</h3>
 
           <div style={field}>
             <label style={label}>Overall Device Status</label>
@@ -302,7 +302,7 @@ function AEDInspectionForm({ prefill = {}, onSubmit, user }: Props) {
                 <label key={opt.value} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '10px 12px', borderRadius: '6px', cursor: 'pointer', backgroundColor: overallStatus === opt.value ? `${STATUS_COLORS[opt.value]}18` : 'white', border: overallStatus === opt.value ? `1.5px solid ${STATUS_COLORS[opt.value]}` : '1px solid rgba(0,0,0,0.1)' }}>
                   <input type="radio" name="overall" value={opt.value} checked={overallStatus === opt.value} onChange={e => setOverallStatus(e.target.value)} />
                   <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: STATUS_COLORS[opt.value], display: 'inline-block', flexShrink: 0, boxShadow: `0 0 6px ${STATUS_COLORS[opt.value]}` }} />
-                  <span style={{ fontSize: '14px', fontWeight: '600', color: overallStatus === opt.value ? STATUS_COLORS[opt.value] : '#3d3d3a' }}>{opt.label}</span>
+                  <span style={{ fontSize: '16px', fontWeight: '600', color: overallStatus === opt.value ? STATUS_COLORS[opt.value] : '#3d3d3a' }}>{opt.label}</span>
                 </label>
               ))}
             </div>
