@@ -23,12 +23,6 @@ const STATUS_COLORS: Record<string, string> = {
   action_needed: '#a63a2a',
 };
 
-const STATUS_LABELS: Record<string, string> = {
-  ready: 'Ready',
-  attention: 'Attention needed',
-  action_needed: 'Action needed',
-};
-
 function Logo() {
   return (
     <img src="/logo.png" alt="National Safety Training Center" style={{ height: '40px' }} />
