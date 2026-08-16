@@ -1,32 +1,32 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Scanner from './Scanner';
+import supabase from './supabase';
 
-const MOCK_DEVICES = [
-  { id: '1', name: 'Philips OnSite AED', location: 'Bldg A, Room 102', status: 'action_needed', statusMessage: 'Battery expires in 3 days' },
-  { id: '2', name: 'Zoll AED Plus', location: 'Bldg C, Lobby', status: 'attention', statusMessage: 'Last inspection: 45 days ago' },
-  { id: '3', name: 'Cardiac Science Powerheart', location: 'Bldg B, 3rd Floor', status: 'ready', statusMessage: 'Last inspection: 12 days ago' },
-  { id: '4', name: 'HeartStart Onsite', location: 'Bldg A, Cafeteria', status: 'ready', statusMessage: 'Last inspection: 8 days ago' },
-  { id: '5', name: 'Philips OnSite AED', location: 'Bldg D, Entrance', status: 'action_needed', statusMessage: 'Pads expired 6 days ago' },
-];
-
-const MOCK_LOCATIONS = [
-  { id: '1', name: 'Building A', deviceCount: 3 },
-  { id: '2', name: 'Building B', deviceCount: 2 },
-  { id: '3', name: 'Building C', deviceCount: 1 },
-  { id: '4', name: 'Building D', deviceCount: 1 },
-];
-
-const MOCK_DEVICE_TYPES = [
-  { id: '1', brand: 'Philips', model: 'OnSite AED', deviceCount: 2 },
-  { id: '2', brand: 'Zoll', model: 'AED Plus', deviceCount: 1 },
-  { id: '3', brand: 'Cardiac Science', model: 'Powerheart', deviceCount: 1 },
-  { id: '4', brand: 'Philips', model: 'HeartStart Onsite', deviceCount: 1 },
-];
+interface Device {
+  id: number;
+  serial_number: string;
+  brand: string;
+  model: string;
+  location: string;
+  overall_status: string;
+  inspection_date: string;
+  battery_status: string;
+  battery_expiration_date: string;
+  pads_status: string;
+  pads_expiration_date: string;
+  inspector_name: string;
+}
 
 const STATUS_COLORS: Record<string, string> = {
   ready: '#5d8b5f',
   attention: '#8b7a3f',
   action_needed: '#a63a2a',
+};
+
+const STATUS_LABELS: Record<string, string> = {
+  ready: 'Ready',
+  attention: 'Attention needed',
+  action_needed: 'Action needed',
 };
 
 function Logo() {
@@ -47,16 +47,61 @@ function AEDAppHome({ user, onLogout }: Props) {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [actionFilter, setActionFilter] = useState(false);
   const [scannerOpen, setScannerOpen] = useState(false);
+  const [devices, setDevices] = useState<Device[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const actionNeededDevices = MOCK_DEVICES.filter(d => d.status === 'action_needed');
+  useEffect(() => {
+    fetchDevices();
+  }, []);
+
+  const fetchDevices = async () => {
+    setLoading(true);
+    const { data, error } = await supabase
+      .from('latest_inspections')
+      .select('*')
+      .order('created_at', { ascending: false });
+    if (!error && data) {
+      setDevices(data);
+    }
+    setLoading(false);
+  };
+
+  const getStatusMessage = (device: Device) => {
+    const today = new Date();
+    const inspectionDate = new Date(device.inspection_date);
+    const daysSince = Math.floor((today.getTime() - inspectionDate.getTime()) / (1000 * 60 * 60 * 24));
+
+    if (device.battery_status === 'expired') return 'Battery expired';
+    if (device.pads_status === 'expired') return 'Pads expired';
+    if (device.battery_status === 'warning') return 'Battery expiring soon';
+    if (device.pads_status === 'warning') return 'Pads expiring soon';
+    return `Last inspection: ${daysSince} day${daysSince !== 1 ? 's' : ''} ago`;
+  };
+
+  const actionNeededDevices = devices.filter(d => d.overall_status === 'action_needed');
   const actionNeededCount = actionNeededDevices.length;
 
   const displayedDevices = actionFilter
     ? actionNeededDevices
-    : MOCK_DEVICES.filter(device =>
-        device.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        device.location.toLowerCase().includes(searchQuery.toLowerCase())
+    : devices.filter(device =>
+        (device.brand + ' ' + device.model).toLowerCase().includes(searchQuery.toLowerCase()) ||
+        device.location.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        device.serial_number.toLowerCase().includes(searchQuery.toLowerCase())
       );
+
+  // Unique locations
+  const locations = Array.from(new Set(devices.map(d => d.location))).map(loc => ({
+    name: loc,
+    deviceCount: devices.filter(d => d.location === loc).length,
+  }));
+
+  // Unique device types
+  const typeMap: Record<string, number> = {};
+  devices.forEach(d => {
+    const key = `${d.brand} ${d.model}`;
+    typeMap[key] = (typeMap[key] || 0) + 1;
+  });
+  const deviceTypes = Object.entries(typeMap).map(([name, count]) => ({ name, count }));
 
   const navigate = (page: string, prefill = {}) => {
     window.dispatchEvent(new CustomEvent('navigate', { detail: page }));
@@ -95,9 +140,12 @@ function AEDAppHome({ user, onLogout }: Props) {
         <button onClick={() => setMenuOpen(!menuOpen)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '4px' }}>
           <Logo />
         </button>
+        <button onClick={fetchDevices} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '8px', color: 'white', fontSize: '12px', fontWeight: '600' }}>
+          Refresh
+        </button>
       </div>
 
-      {/* Dropdown Menu */}
+      {/* Menu */}
       {menuOpen && (
         <div style={{ backgroundColor: '#c8c8ca', borderBottom: '1px solid rgba(0,0,0,0.1)', padding: '12px 16px', fontSize: '14px', color: '#3d3d3a' }}>
           <div style={{ padding: '8px 0', cursor: 'pointer', borderBottom: '1px solid rgba(0,0,0,0.05)' }}>Profile</div>
@@ -120,6 +168,7 @@ function AEDAppHome({ user, onLogout }: Props) {
             <span style={{ fontSize: '36px', fontWeight: '700', color: '#a63a2a' }}>{actionNeededCount}</span>
             <span style={{ fontSize: '14px', color: '#3d3d3a', fontWeight: '500' }}>devices with action needed</span>
           </div>
+          <div style={{ fontSize: '12px', color: '#888780', marginTop: '4px' }}>{devices.length} total devices tracked</div>
           {actionFilter && (
             <div style={{ marginTop: '8px', fontSize: '12px', color: '#a63a2a', fontWeight: '600' }}>
               Showing action needed only —{' '}
@@ -148,41 +197,64 @@ function AEDAppHome({ user, onLogout }: Props) {
           <div style={{ marginBottom: '16px' }}>
             <input
               type="text"
-              placeholder="Search devices"
+              placeholder="Search by device, location, or serial"
               value={searchQuery}
               onChange={e => setSearchQuery(e.target.value)}
-              style={{ width: '100%', padding: '10px 12px', border: '1px solid rgba(0,0,0,0.1)', borderRadius: '6px', fontSize: '14px', backgroundColor: '#dcdcdd', color: '#3d3d3a', boxSizing: 'border-box' }}
+              style={{ width: '100%', padding: '10px 12px', border: '1px solid rgba(0,0,0,0.1)', borderRadius: '6px', fontSize: '16px', backgroundColor: '#dcdcdd', color: '#3d3d3a', boxSizing: 'border-box' }}
             />
           </div>
         )}
 
+        {/* Loading */}
+        {loading && (
+          <div style={{ textAlign: 'center', padding: '40px', color: '#888780', fontSize: '14px' }}>
+            Loading devices...
+          </div>
+        )}
+
+        {/* Empty state */}
+        {!loading && activeTab === 'fleet' && displayedDevices.length === 0 && (
+          <div style={{ textAlign: 'center', padding: '40px', color: '#888780', fontSize: '14px' }}>
+            {devices.length === 0 ? 'No inspections recorded yet. Add your first inspection.' : 'No devices match your search.'}
+          </div>
+        )}
+
         {/* Fleet */}
-        {activeTab === 'fleet' && displayedDevices.map(device => (
+        {!loading && activeTab === 'fleet' && displayedDevices.map(device => (
           <div key={device.id} style={{ backgroundColor: '#dcdcdd', border: '1px solid rgba(0,0,0,0.08)', borderRadius: '8px', padding: '16px', marginBottom: '12px', display: 'flex', gap: '12px', cursor: 'pointer' }}>
-            <div style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: STATUS_COLORS[device.status], marginTop: '4px', flexShrink: 0, boxShadow: `0 0 8px ${STATUS_COLORS[device.status]}` }} />
+            <div style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: STATUS_COLORS[device.overall_status] || '#888780', marginTop: '4px', flexShrink: 0, boxShadow: `0 0 8px ${STATUS_COLORS[device.overall_status] || '#888780'}` }} />
             <div style={{ flex: '1' }}>
-              <div style={{ fontWeight: '700', fontSize: '14px', color: '#3d3d3a', marginBottom: '4px' }}>{device.name}</div>
+              <div style={{ fontWeight: '700', fontSize: '14px', color: '#3d3d3a', marginBottom: '2px' }}>{device.brand} {device.model}</div>
+              <div style={{ fontSize: '11px', color: '#888780', marginBottom: '4px', fontFamily: 'monospace' }}>SN: {device.serial_number}</div>
               <div style={{ fontSize: '12px', color: '#888780', marginBottom: '8px' }}>{device.location}</div>
-              <div style={{ fontSize: '12px', color: STATUS_COLORS[device.status], fontWeight: '600' }}>{device.statusMessage}</div>
+              <div style={{ fontSize: '12px', color: STATUS_COLORS[device.overall_status] || '#888780', fontWeight: '600' }}>{getStatusMessage(device)}</div>
             </div>
           </div>
         ))}
 
         {/* Locations */}
-        {activeTab === 'locations' && MOCK_LOCATIONS.map(loc => (
-          <div key={loc.id} style={{ backgroundColor: '#dcdcdd', border: '1px solid rgba(0,0,0,0.08)', borderRadius: '8px', padding: '16px', marginBottom: '12px', cursor: 'pointer' }}>
+        {!loading && activeTab === 'locations' && locations.map((loc, i) => (
+          <div key={i} style={{ backgroundColor: '#dcdcdd', border: '1px solid rgba(0,0,0,0.08)', borderRadius: '8px', padding: '16px', marginBottom: '12px' }}>
             <div style={{ fontWeight: '700', fontSize: '14px', color: '#3d3d3a', marginBottom: '4px' }}>{loc.name}</div>
-            <div style={{ fontSize: '12px', color: '#888780' }}>{loc.deviceCount} devices</div>
+            <div style={{ fontSize: '12px', color: '#888780' }}>{loc.deviceCount} device{loc.deviceCount !== 1 ? 's' : ''}</div>
           </div>
         ))}
 
+        {!loading && activeTab === 'locations' && locations.length === 0 && (
+          <div style={{ textAlign: 'center', padding: '40px', color: '#888780', fontSize: '14px' }}>No locations recorded yet.</div>
+        )}
+
         {/* Device Types */}
-        {activeTab === 'types' && MOCK_DEVICE_TYPES.map(type => (
-          <div key={type.id} style={{ backgroundColor: '#dcdcdd', border: '1px solid rgba(0,0,0,0.08)', borderRadius: '8px', padding: '16px', marginBottom: '12px', cursor: 'pointer' }}>
-            <div style={{ fontWeight: '700', fontSize: '14px', color: '#3d3d3a', marginBottom: '4px' }}>{type.brand} {type.model}</div>
-            <div style={{ fontSize: '12px', color: '#888780' }}>{type.deviceCount} devices</div>
+        {!loading && activeTab === 'types' && deviceTypes.map((type, i) => (
+          <div key={i} style={{ backgroundColor: '#dcdcdd', border: '1px solid rgba(0,0,0,0.08)', borderRadius: '8px', padding: '16px', marginBottom: '12px' }}>
+            <div style={{ fontWeight: '700', fontSize: '14px', color: '#3d3d3a', marginBottom: '4px' }}>{type.name}</div>
+            <div style={{ fontSize: '12px', color: '#888780' }}>{type.count} device{type.count !== 1 ? 's' : ''}</div>
           </div>
         ))}
+
+        {!loading && activeTab === 'types' && deviceTypes.length === 0 && (
+          <div style={{ textAlign: 'center', padding: '40px', color: '#888780', fontSize: '14px' }}>No devices recorded yet.</div>
+        )}
 
       </div>
 
@@ -203,18 +275,10 @@ function AEDAppHome({ user, onLogout }: Props) {
       {drawerOpen && (
         <div style={{ position: 'fixed', bottom: '72px', left: '16px', right: '16px', backgroundColor: '#dcdcdd', borderRadius: '12px', padding: '20px', zIndex: 999, border: '1px solid rgba(0,0,0,0.1)' }}>
           <div style={{ fontWeight: '700', fontSize: '14px', color: '#3d3d3a', marginBottom: '16px' }}>Add Inspection</div>
-
-          <button
-            onClick={handleCameraScan}
-            style={{ width: '100%', padding: '14px', backgroundColor: '#3d3d3a', color: 'white', border: 'none', borderRadius: '6px', fontSize: '14px', fontWeight: '700', cursor: 'pointer', marginBottom: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px' }}
-          >
+          <button onClick={handleCameraScan} style={{ width: '100%', padding: '14px', backgroundColor: '#3d3d3a', color: 'white', border: 'none', borderRadius: '6px', fontSize: '14px', fontWeight: '700', cursor: 'pointer', marginBottom: '10px' }}>
             Scan QR / Barcode
           </button>
-
-          <button
-            onClick={handleManualEntry}
-            style={{ width: '100%', padding: '14px', backgroundColor: '#5d8b5f', color: 'white', border: 'none', borderRadius: '6px', fontSize: '14px', fontWeight: '700', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px' }}
-          >
+          <button onClick={handleManualEntry} style={{ width: '100%', padding: '14px', backgroundColor: '#5d8b5f', color: 'white', border: 'none', borderRadius: '6px', fontSize: '14px', fontWeight: '700', cursor: 'pointer' }}>
             Manual Entry
           </button>
         </div>
