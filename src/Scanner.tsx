@@ -35,7 +35,7 @@ function Scanner({ onScan, onClose }: Props) {
         scannerRef.current.stop().catch(() => {});
       }
     };
-  }, []);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleClose = () => {
     if (scannerRef.current) {
