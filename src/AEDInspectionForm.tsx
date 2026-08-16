@@ -98,7 +98,7 @@ function AEDInspectionForm({ prefill = {}, onSubmit, user }: Props) {
     const files = Array.from(e.target.files || []);
     if (files.length === 0) return;
 
-    const newPhotos = [...photos, ...files].slice(0, 5);
+    const newPhotos = [...photos, ...files].slice(0, 3);
     setPhotos(newPhotos);
 
     const previews = newPhotos.map(file => URL.createObjectURL(file));
@@ -368,7 +368,7 @@ function AEDInspectionForm({ prefill = {}, onSubmit, user }: Props) {
 
         {/* Photos */}
         <div style={section}>
-          <h3 style={{ margin: '0 0 16px 0', fontSize: '14px', fontWeight: '700', color: '#3d3d3a', borderBottom: '1px solid rgba(0,0,0,0.08)', paddingBottom: '10px' }}>Photos <span style={{ fontWeight: '400', color: '#888780' }}>(optional, max 5)</span></h3>
+          <h3 style={{ margin: '0 0 16px 0', fontSize: '14px', fontWeight: '700', color: '#3d3d3a', borderBottom: '1px solid rgba(0,0,0,0.08)', paddingBottom: '10px' }}>Photos <span style={{ fontWeight: '400', color: '#888780' }}>(optional, max 3)</span></h3>
 
           <input
             ref={fileInputRef}
@@ -396,7 +396,7 @@ function AEDInspectionForm({ prefill = {}, onSubmit, user }: Props) {
             </div>
           )}
 
-          {photos.length < 5 && (
+          {photos.length < 3 && (
             <button
               type="button"
               onClick={() => fileInputRef.current?.click()}
