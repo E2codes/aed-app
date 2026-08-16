@@ -384,7 +384,7 @@ function AEDInspectionForm({ prefill = {}, onSubmit, user }: Props) {
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px', marginBottom: '12px' }}>
               {photoPreviews.map((preview, index) => (
                 <div key={index} style={{ position: 'relative', aspectRatio: '1', borderRadius: '6px', overflow: 'hidden' }}>
-                  <img src={preview} alt={`Inspection image ${index + 1}`} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                  <img src={preview} alt={`AED inspection ${index + 1}`} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                   <button
                     onClick={() => removePhoto(index)}
                     style={{ position: 'absolute', top: '4px', right: '4px', width: '22px', height: '22px', borderRadius: '50%', backgroundColor: '#a63a2a', color: 'white', border: 'none', cursor: 'pointer', fontSize: '14px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: '700' }}
