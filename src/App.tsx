@@ -1,23 +1,21 @@
 import React, { useState, useEffect } from 'react';
-import AEDAppHome from './AEDAppHome';
 import supabase from './supabase';
+import AEDAppHome from './AEDAppHome';
 import AEDInspectionForm from './AEDInspectionForm';
 import Login from './Login';
 
 function App() {
   const [currentPage, setCurrentPage] = useState('home');
-  const [prefillData, setPrefillData] = useState({});
+  const [prefillData, setPrefillData] = useState<any>({});
   const [user, setUser] = useState<any>(null);
   const [authLoading, setAuthLoading] = useState(true);
 
   useEffect(() => {
-    // Check if user is already logged in
     supabase.auth.getSession().then(({ data: { session } }) => {
       setUser(session?.user ?? null);
       setAuthLoading(false);
     });
 
-    // Listen for login/logout changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setUser(session?.user ?? null);
     });
@@ -26,7 +24,13 @@ function App() {
   }, []);
 
   useEffect(() => {
-    const handleNavigate = (e: any) => setCurrentPage(e.detail);
+    const handleNavigate = (e: any) => {
+      setCurrentPage(e.detail);
+      // Clear prefill when navigating to home
+      if (e.detail === 'home') {
+        setPrefillData({});
+      }
+    };
     const handlePrefill = (e: any) => setPrefillData(e.detail);
     window.addEventListener('navigate', handleNavigate);
     window.addEventListener('prefill', handlePrefill);
@@ -42,7 +46,6 @@ function App() {
     setPrefillData({});
   };
 
-  // Still checking auth
   if (authLoading) {
     return (
       <div style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif', backgroundColor: '#b5b5b7', minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -51,12 +54,10 @@ function App() {
     );
   }
 
-  // Not logged in — show login screen
   if (!user) {
     return <Login onLogin={setUser} />;
   }
 
-  // Logged in — show inspection form
   if (currentPage === 'inspection') {
     return (
       <div>
@@ -67,7 +68,7 @@ function App() {
           Back
         </button>
         <AEDInspectionForm
-          prefill={prefillData}
+          prefill={Object.keys(prefillData).length > 0 ? prefillData : undefined}
           user={user}
           onSubmit={() => { setCurrentPage('home'); setPrefillData({}); }}
         />
@@ -75,7 +76,6 @@ function App() {
     );
   }
 
-  // Logged in — show home
   return <AEDAppHome user={user} onLogout={handleLogout} />;
 }
 

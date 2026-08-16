@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import Scanner from './Scanner';
 
 const MOCK_DEVICES = [
   { id: '1', name: 'Philips OnSite AED', location: 'Bldg A, Room 102', status: 'action_needed', statusMessage: 'Battery expires in 3 days' },
@@ -45,6 +46,7 @@ function AEDAppHome({ user, onLogout }: Props) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [actionFilter, setActionFilter] = useState(false);
+  const [scannerOpen, setScannerOpen] = useState(false);
 
   const actionNeededDevices = MOCK_DEVICES.filter(d => d.status === 'action_needed');
   const actionNeededCount = actionNeededDevices.length;
@@ -65,14 +67,13 @@ function AEDAppHome({ user, onLogout }: Props) {
 
   const handleCameraScan = () => {
     setDrawerOpen(false);
-    setTimeout(() => {
-      navigate('inspection', {
-        brand: 'Philips',
-        model: 'OnSite AED',
-        serialNumber: 'PH-2024-00142',
-        location: 'Bldg A, Room 102',
-      });
-    }, 300);
+    setScannerOpen(true);
+  };
+
+  const handleScanResult = (result: string) => {
+    setScannerOpen(false);
+    window.dispatchEvent(new CustomEvent('prefill', { detail: { serialNumber: result } }));
+    navigate('inspection');
   };
 
   const handleManualEntry = () => {
@@ -184,6 +185,14 @@ function AEDAppHome({ user, onLogout }: Props) {
         ))}
 
       </div>
+
+      {/* QR Scanner */}
+      {scannerOpen && (
+        <Scanner
+          onScan={handleScanResult}
+          onClose={() => setScannerOpen(false)}
+        />
+      )}
 
       {/* Drawer overlay */}
       {drawerOpen && (
