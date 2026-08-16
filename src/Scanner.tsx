@@ -37,7 +37,7 @@ function Scanner({ onScan, onClose }: Props) {
       { facingMode: 'environment' },
       {
         fps: 15,
-        qrbox: { width: 280, height: 280 },
+        qrbox: { width: 300, height: 150 },
         aspectRatio: 1.0,
       },
       (decodedText) => {
