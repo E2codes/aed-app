@@ -1,37 +1,61 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Html5Qrcode } from 'html5-qrcode';
+import { Html5Qrcode, Html5QrcodeSupportedFormats } from 'html5-qrcode';
 
 interface Props {
   onScan: (result: string) => void;
   onClose: () => void;
 }
 
+const ALL_FORMATS = [
+  Html5QrcodeSupportedFormats.QR_CODE,
+  Html5QrcodeSupportedFormats.CODE_128,
+  Html5QrcodeSupportedFormats.CODE_39,
+  Html5QrcodeSupportedFormats.CODE_93,
+  Html5QrcodeSupportedFormats.EAN_13,
+  Html5QrcodeSupportedFormats.EAN_8,
+  Html5QrcodeSupportedFormats.UPC_A,
+  Html5QrcodeSupportedFormats.UPC_E,
+  Html5QrcodeSupportedFormats.CODABAR,
+  Html5QrcodeSupportedFormats.ITF,
+  Html5QrcodeSupportedFormats.DATA_MATRIX,
+  Html5QrcodeSupportedFormats.PDF_417,
+];
+
 function Scanner({ onScan, onClose }: Props) {
   const scannerRef = useRef<Html5Qrcode | null>(null);
   const [error, setError] = useState('');
-  const [started, setStarted] = useState(false);
+  const [scanning, setScanning] = useState(false);
 
   useEffect(() => {
-    const scanner = new Html5Qrcode('qr-reader');
+    const scanner = new Html5Qrcode('qr-reader', {
+      formatsToSupport: ALL_FORMATS,
+      verbose: false,
+    });
     scannerRef.current = scanner;
 
     scanner.start(
       { facingMode: 'environment' },
-      { fps: 10, qrbox: { width: 250, height: 250 } },
+      {
+        fps: 15,
+        qrbox: { width: 280, height: 280 },
+        aspectRatio: 1.0,
+      },
       (decodedText) => {
         scanner.stop().then(() => {
+          onScan(decodedText);
+        }).catch(() => {
           onScan(decodedText);
         });
       },
       () => {}
     ).then(() => {
-      setStarted(true);
-    }).catch((err) => {
-      setError('Camera access denied. Please allow camera access and try again.');
+      setScanning(true);
+    }).catch(() => {
+      setError('Camera access denied. Please allow camera access in your browser settings and try again.');
     });
 
     return () => {
-      if (scannerRef.current && started) {
+      if (scannerRef.current) {
         scannerRef.current.stop().catch(() => {});
       }
     };
@@ -48,24 +72,31 @@ function Scanner({ onScan, onClose }: Props) {
   };
 
   return (
-    <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.9)', zIndex: 2000, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '24px' }}>
+    <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.95)', zIndex: 2000, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '24px' }}>
 
       <div style={{ color: 'white', fontWeight: '700', fontSize: '16px', marginBottom: '8px' }}>
-        Scan Serial Number
+        Scan Device
       </div>
       <div style={{ color: '#888780', fontSize: '13px', marginBottom: '24px', textAlign: 'center' }}>
-        Point camera at QR code or barcode
+        Point camera at QR code or barcode on the AED
       </div>
 
       {error ? (
-        <div style={{ backgroundColor: '#a63a2a', color: 'white', padding: '12px 16px', borderRadius: '8px', fontSize: '14px', fontWeight: '600', textAlign: 'center', marginBottom: '24px' }}>
+        <div style={{ backgroundColor: '#a63a2a', color: 'white', padding: '12px 16px', borderRadius: '8px', fontSize: '14px', fontWeight: '600', textAlign: 'center', marginBottom: '24px', maxWidth: '300px' }}>
           {error}
         </div>
       ) : (
-        <div
-          id="qr-reader"
-          style={{ width: '100%', maxWidth: '320px', borderRadius: '12px', overflow: 'hidden', border: '2px solid #5d8b5f' }}
-        />
+        <div style={{ width: '100%', maxWidth: '320px' }}>
+          <div
+            id="qr-reader"
+            style={{ width: '100%', borderRadius: '12px', overflow: 'hidden', border: '2px solid #5d8b5f' }}
+          />
+          {!scanning && (
+            <div style={{ color: '#888780', fontSize: '12px', textAlign: 'center', marginTop: '8px' }}>
+              Starting camera...
+            </div>
+          )}
+        </div>
       )}
 
       <button
