@@ -15,8 +15,6 @@ const ALL_FORMATS = [
   Html5QrcodeSupportedFormats.EAN_8,
   Html5QrcodeSupportedFormats.UPC_A,
   Html5QrcodeSupportedFormats.UPC_E,
-  Html5QrcodeSupportedFormats.CODABAR,
-  Html5QrcodeSupportedFormats.ITF,
   Html5QrcodeSupportedFormats.DATA_MATRIX,
   Html5QrcodeSupportedFormats.PDF_417,
 ];
@@ -25,6 +23,21 @@ function Scanner({ onScan, onClose }: Props) {
   const scannerRef = useRef<Html5Qrcode | null>(null);
   const [error, setError] = useState('');
   const [scanning, setScanning] = useState(false);
+  const scannedRef = useRef(false);
+
+  const stopAndExit = (callback?: () => void) => {
+    if (scannerRef.current) {
+      scannerRef.current.stop()
+        .catch(() => {})
+        .finally(() => {
+          scannerRef.current?.clear();
+          scannerRef.current = null;
+          if (callback) callback();
+        });
+    } else {
+      if (callback) callback();
+    }
+  };
 
   useEffect(() => {
     const scanner = new Html5Qrcode('qr-reader', {
@@ -37,48 +50,33 @@ function Scanner({ onScan, onClose }: Props) {
       { facingMode: 'environment' },
       {
         fps: 15,
-        qrbox: { width: 300, height: 150 },
-        aspectRatio: 1.0,
+        qrbox: { width: 280, height: 150 },
       },
       (decodedText) => {
-        scanner.stop().then(() => {
-          onScan(decodedText);
-        }).catch(() => {
-          onScan(decodedText);
-        });
+        if (scannedRef.current) return;
+        scannedRef.current = true;
+        stopAndExit(() => onScan(decodedText));
       },
       () => {}
     ).then(() => {
       setScanning(true);
     }).catch(() => {
-      setError('Camera access denied. Please allow camera access in your browser settings and try again.');
+      setError('Camera access denied. Please allow camera access and try again.');
     });
 
     return () => {
-      if (scannerRef.current) {
-        scannerRef.current.stop().catch(() => {});
-      }
+      stopAndExit();
     };
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const handleClose = () => {
-    if (scannerRef.current) {
-      scannerRef.current.stop().catch(() => {}).finally(() => {
-        onClose();
-      });
-    } else {
-      onClose();
-    }
-  };
-
   return (
-    <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.95)', zIndex: 2000, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '24px' }}>
+    <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: '#000', zIndex: 2000, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '24px' }}>
 
       <div style={{ color: 'white', fontWeight: '700', fontSize: '16px', marginBottom: '8px' }}>
         Scan Device
       </div>
       <div style={{ color: '#888780', fontSize: '13px', marginBottom: '24px', textAlign: 'center' }}>
-        Point camera at QR code or barcode on the AED
+        Point camera at QR code or barcode
       </div>
 
       {error ? (
@@ -100,7 +98,7 @@ function Scanner({ onScan, onClose }: Props) {
       )}
 
       <button
-        onClick={handleClose}
+        onClick={() => stopAndExit(onClose)}
         style={{ marginTop: '24px', padding: '14px 32px', backgroundColor: '#3d3d3a', color: 'white', border: 'none', borderRadius: '6px', fontSize: '15px', fontWeight: '700', cursor: 'pointer' }}
       >
         Cancel
