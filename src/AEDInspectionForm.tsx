@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import Scanner from './Scanner';
 import supabase from './supabase';
 
 const BRANDS = ['Philips', 'Zoll', 'Cardiac Science', 'HeartSine', 'Defibtech', 'Physio-Control', 'Other'];
@@ -67,6 +68,7 @@ function AEDInspectionForm({ prefill = {}, onSubmit, user }: Props) {
   const [brand, setBrand] = useState(prefill.brand || '');
   const [model, setModel] = useState(prefill.model || '');
   const [serialNumber, setSerialNumber] = useState(prefill.serialNumber || '');
+  const [scannerOpen, setScannerOpen] = useState(false);
   const [location, setLocation] = useState(prefill.location || '');
   const [inspectorName, setInspectorName] = useState(user?.email || '');
   const [inspectionDate, setInspectionDate] = useState(new Date().toISOString().split('T')[0]);
@@ -98,7 +100,7 @@ function AEDInspectionForm({ prefill = {}, onSubmit, user }: Props) {
     const files = Array.from(e.target.files || []);
     if (files.length === 0) return;
 
-    const newPhotos = [...photos, ...files].slice(0, 3);
+    const newPhotos = [...photos, ...files].slice(0, 5);
     setPhotos(newPhotos);
 
     const previews = newPhotos.map(file => URL.createObjectURL(file));
@@ -260,8 +262,19 @@ function AEDInspectionForm({ prefill = {}, onSubmit, user }: Props) {
 
           <div style={fieldStyle}>
             <label style={labelStyle}>Serial Number</label>
-            <input type="text" value={serialNumber} onChange={e => setSerialNumber(e.target.value)} placeholder="e.g. PH-2024-00142" style={inputStyle(!!errors.serialNumber)} />
+            <div style={{ display: 'flex', gap: '8px' }}>
+              <input type="text" value={serialNumber} onChange={e => setSerialNumber(e.target.value)} placeholder="e.g. PH-2024-00142" style={{ ...inputStyle(!!errors.serialNumber), flex: 1 }} />
+              <button type="button" onClick={() => setScannerOpen(true)} style={{ padding: '10px 14px', backgroundColor: '#3d3d3a', color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer', fontSize: '13px', fontWeight: '700', whiteSpace: 'nowrap' }}>
+                Scan
+              </button>
+            </div>
             {errors.serialNumber && <div style={errStyle}>{errors.serialNumber}</div>}
+            {scannerOpen && (
+              <Scanner
+                onScan={(result) => { setSerialNumber(result); setScannerOpen(false); }}
+                onClose={() => setScannerOpen(false)}
+              />
+            )}
           </div>
 
           <div style={{ marginBottom: 0 }}>
@@ -368,7 +381,7 @@ function AEDInspectionForm({ prefill = {}, onSubmit, user }: Props) {
 
         {/* Photos */}
         <div style={section}>
-          <h3 style={{ margin: '0 0 16px 0', fontSize: '14px', fontWeight: '700', color: '#3d3d3a', borderBottom: '1px solid rgba(0,0,0,0.08)', paddingBottom: '10px' }}>Photos <span style={{ fontWeight: '400', color: '#888780' }}>(optional, max 3)</span></h3>
+          <h3 style={{ margin: '0 0 16px 0', fontSize: '14px', fontWeight: '700', color: '#3d3d3a', borderBottom: '1px solid rgba(0,0,0,0.08)', paddingBottom: '10px' }}>Photos <span style={{ fontWeight: '400', color: '#888780' }}>(optional, max 5)</span></h3>
 
           <input
             ref={fileInputRef}
@@ -384,7 +397,7 @@ function AEDInspectionForm({ prefill = {}, onSubmit, user }: Props) {
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px', marginBottom: '12px' }}>
               {photoPreviews.map((preview, index) => (
                 <div key={index} style={{ position: 'relative', aspectRatio: '1', borderRadius: '6px', overflow: 'hidden' }}>
-                  <img src={preview} alt={`AED inspection ${index + 1}`} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                  <img src={preview} alt={`Photo ${index + 1}`} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                   <button
                     onClick={() => removePhoto(index)}
                     style={{ position: 'absolute', top: '4px', right: '4px', width: '22px', height: '22px', borderRadius: '50%', backgroundColor: '#a63a2a', color: 'white', border: 'none', cursor: 'pointer', fontSize: '14px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: '700' }}
@@ -396,7 +409,7 @@ function AEDInspectionForm({ prefill = {}, onSubmit, user }: Props) {
             </div>
           )}
 
-          {photos.length < 3 && (
+          {photos.length < 5 && (
             <button
               type="button"
               onClick={() => fileInputRef.current?.click()}
